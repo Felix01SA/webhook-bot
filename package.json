@@ -9,7 +9,7 @@
         "build": "npx tsup",
         "start": "node dist/main.js",
         "start:prod": "npm run prisma:push && npm run build && npm start",
-        "prisma:push": "npx prisma migrate deply"
+        "prisma:push": "npx prisma migrate deploy"
     },
     "keywords": [],
     "author": "",
