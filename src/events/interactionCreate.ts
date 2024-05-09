@@ -25,6 +25,6 @@ async function syncGuild(db: PrismaService, guildId: string) {
 
     await db.guild.update({
         where: { id: guildId },
-        data: { last_interaction: new Date() },
+        data: { last_interaction: new Date().toISOString() },
     })
 }
