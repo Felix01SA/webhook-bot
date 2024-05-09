@@ -14,7 +14,7 @@ export class InteractionCreateEvent {
             await this.db.guild.upsert({
                 create: { id: interaction.guildId },
                 where: { id: interaction.guildId },
-                update: {},
+                update: { last_interaction: new Date() },
             })
         }
 

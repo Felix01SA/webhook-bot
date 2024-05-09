@@ -11,7 +11,8 @@ datasource db {
 }
 
 model Guild {
-  id              String  @id
-  secret          String?
-  webhook_channel String?
+  id               String   @id
+  secret           String?
+  webhook_channel  String?
+  last_interaction DateTime @default(now())
 }
