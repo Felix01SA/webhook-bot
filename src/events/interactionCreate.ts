@@ -19,9 +19,12 @@ export class InteractionCreateEvent {
 }
 
 async function syncGuild(db: PrismaService, guildId: string) {
-    await db.guild.upsert({
+    const guildData = await db.guild.findFirst({ where: { id: guildId } })
+
+    if (!guildData) return await db.guild.create({ data: { id: guildId } })
+
+    await db.guild.update({
         where: { id: guildId },
-        update: { last_interaction: new Date() },
-        create: { id: guildId },
+        data: { last_interaction: new Date() },
     })
 }
