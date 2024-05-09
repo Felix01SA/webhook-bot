@@ -20,7 +20,8 @@ async function run() {
     await server.build()
 
     await client.login(process.env.BOT_TOKEN as string)
-    server.listen(8080, () => console.log('API ON!'))
+    const port = env.PORT ?? 8080
+    server.listen(port, () => console.log('API ON!'))
 
     if (env.NODE_ENV !== 'production') {
         const proxy = new smee({

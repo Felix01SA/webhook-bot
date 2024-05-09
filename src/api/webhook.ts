@@ -68,7 +68,7 @@ export class Webhook {
         if (files.modified.length) {
             console.log(files.modified)
             embed.addFields({
-                name: 'Arquivos Adicionados',
+                name: 'Arquivos Modificados',
                 value: codeBlock(brBuilder(files.modified)),
                 inline: true,
             })
@@ -76,7 +76,7 @@ export class Webhook {
         if (files.removed.length) {
             console.log(files.removed)
             embed.addFields({
-                name: 'Arquivos Adicionados',
+                name: 'Arquivos Removidos',
                 value: codeBlock(brBuilder(files.removed)),
                 inline: true,
             })
