@@ -26,6 +26,7 @@ import {
 import { PrismaService } from '../PrismaService'
 import { inject, injectable } from 'tsyringe'
 import { PermissonsGuard } from '../lib/guards/permissions'
+import { env } from '../lib/env'
 
 @Discord()
 @Guard(PermissonsGuard(['ManageGuild', 'Administrator']))
@@ -69,10 +70,7 @@ export class ConfigCommand {
                             `${secret ?? 'Não definido'}`
                         )}`
                     )
-                )
-                .setFooter({
-                    text: 'Webhook url: https://webhookbot.squareweb.app/github',
-                }),
+                ),
     }
 
     @Slash({
@@ -90,7 +88,11 @@ export class ConfigCommand {
 
         interaction.editReply({
             embeds: [
-                this.embeds.home(guildData?.webhook_channel, guildData?.secret),
+                this.embeds
+                    .home(guildData?.webhook_channel, guildData?.secret)
+                    .setFooter({
+                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+                    }),
             ],
             components: [buttonsRow],
         })
