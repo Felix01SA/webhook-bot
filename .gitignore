@@ -5,3 +5,4 @@ node_modules
 prisma/*.db
 squarecloud.app
 pnpm-lock.yaml
+*.zip
