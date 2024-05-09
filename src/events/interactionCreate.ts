@@ -22,9 +22,4 @@ async function syncGuild(db: PrismaService, guildId: string) {
     const guildData = await db.guild.findFirst({ where: { id: guildId } })
 
     if (!guildData) return await db.guild.create({ data: { id: guildId } })
-
-    await db.guild.update({
-        where: { id: guildId },
-        data: { last_interaction: new Date().toISOString() },
-    })
 }
