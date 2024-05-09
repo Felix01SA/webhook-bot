@@ -11,13 +11,17 @@ export class InteractionCreateEvent {
         client: Client
     ) {
         if (interaction.inGuild()) {
-            await this.db.guild.upsert({
-                create: { id: interaction.guildId },
-                where: { id: interaction.guildId },
-                update: { last_interaction: new Date() },
-            })
+            await syncGuild(this.db, interaction.guildId)
         }
 
         client.executeInteraction(interaction)
     }
+}
+
+async function syncGuild(db: PrismaService, guildId: string) {
+    await db.guild.upsert({
+        where: { id: guildId },
+        update: { last_interaction: new Date() },
+        create: { id: guildId },
+    })
 }
