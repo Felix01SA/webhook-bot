@@ -25,7 +25,7 @@ async function run() {
     if (env.NODE_ENV !== 'production') {
         const proxy = new smee({
             source: env.SMEE_URI!,
-            target: 'http://localhost:8080/events',
+            target: 'http://localhost:8080/965437190911975524/github',
         })
         proxy.start()
     }
