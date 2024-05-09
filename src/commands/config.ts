@@ -78,7 +78,7 @@ export class ConfigCommand {
         defaultMemberPermissions: ['ManageGuild'],
     })
     async config(interaction: CommandInteraction<'cached'>) {
-        await interaction.deferReply()
+        await interaction.deferReply({ ephemeral: true })
 
         const guildData = await this.db.guild.findUnique({
             where: { id: interaction.guildId },
