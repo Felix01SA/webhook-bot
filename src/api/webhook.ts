@@ -35,6 +35,7 @@ export class Webhook {
             .setAuthor({
                 name: body.sender.login,
                 iconURL: body.sender.avatar_url,
+                url: body.sender.html_url,
             })
             .setTitle('Novo Commit: ' + body.head_commit.id.slice(0, 7))
             .setURL(body.compare)
