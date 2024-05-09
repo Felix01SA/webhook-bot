@@ -109,7 +109,11 @@ export class ConfigCommand {
 
         interaction.editReply({
             embeds: [
-                this.embeds.home(guildData?.webhook_channel, guildData?.secret),
+                this.embeds
+                    .home(guildData?.webhook_channel, guildData?.secret)
+                    .setFooter({
+                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+                    }),
             ],
             components: [row],
         })
@@ -133,7 +137,9 @@ export class ConfigCommand {
                     }`
                 )
             )
-            .setFooter({ text: 'Webhook url: URL AQUI' })
+            .setFooter({
+                text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+            })
 
         const selectRow = createRow(
             new ChannelSelectMenuBuilder()
@@ -188,7 +194,13 @@ export class ConfigCommand {
         const buttonsRow = createRow(this.buttons.channel, this.buttons.secret)
 
         interaction.editReply({
-            embeds: [this.embeds.home(updated.webhook_channel, updated.secret)],
+            embeds: [
+                this.embeds
+                    .home(updated.webhook_channel, updated.secret)
+                    .setFooter({
+                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+                    }),
+            ],
             components: [buttonsRow],
         })
     }
@@ -206,7 +218,11 @@ export class ConfigCommand {
         const buttonsRow = createRow(this.buttons.channel, this.buttons.secret)
 
         interaction.editReply({
-            embeds: [this.embeds.home(updated.webhook_channel, secret)],
+            embeds: [
+                this.embeds.home(updated.webhook_channel, secret).setFooter({
+                    text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+                }),
+            ],
             components: [buttonsRow],
         })
     }
