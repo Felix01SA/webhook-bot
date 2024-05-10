@@ -8,9 +8,10 @@ import { Context } from 'koa'
 import crypto from 'node:crypto'
 import { emoji } from '../lib/emoji'
 import { LoggerMiddleware } from './middlewares/logger'
+import { NoPushEvent } from './middlewares/noPushEvent'
 
 @Router()
-@Middleware(LoggerMiddleware)
+@Middleware(LoggerMiddleware, NoPushEvent)
 @injectable()
 export class Webhook {
     constructor(
