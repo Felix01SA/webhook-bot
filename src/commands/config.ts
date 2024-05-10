@@ -64,9 +64,24 @@ export class ConfigCommand {
     }
 
     private embeds = {
-        home: (channelId?: string | null, secret?: string | null) =>
+        home: (
+            guildId: string | null,
+            channelId?: string | null,
+            secret?: string | null
+        ) =>
             new EmbedBuilder()
                 .setTitle(`${emoji('config')} Painel de configurações`)
+                .setDescription(
+                    brBuilder(
+                        `**Webhook URL**: ${env.HOST_URL}/${guildId}/github`,
+                        ' ',
+                        'Nas configurações dos webhooks em seu repo,',
+                        'Cole o **Webhook URL** no campo *Payload URL*,',
+                        'O *Content type* deve ser **application/json**,',
+                        'Cole seu **SECRET** no campo expecifico,',
+                        'Essa aplicação só aceita o evento *push*, qualquer outro não terá resposta.'
+                    )
+                )
                 .addFields(
                     {
                         name: `${emoji('chat')} Canal`,
@@ -98,11 +113,11 @@ export class ConfigCommand {
 
         await interaction.editReply({
             embeds: [
-                this.embeds
-                    .home(guildData?.webhook_channel, guildData?.secret)
-                    .setDescription(
-                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
-                    ),
+                this.embeds.home(
+                    interaction.guildId,
+                    guildData?.webhook_channel,
+                    guildData?.secret
+                ),
             ],
             components: [buttonsRow],
         })
@@ -119,11 +134,11 @@ export class ConfigCommand {
 
         await interaction.editReply({
             embeds: [
-                this.embeds
-                    .home(guildData?.webhook_channel, guildData?.secret)
-                    .setDescription(
-                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
-                    ),
+                this.embeds.home(
+                    interaction.guildId,
+                    guildData?.webhook_channel,
+                    guildData?.secret
+                ),
             ],
             components: [row],
         })
@@ -205,11 +220,11 @@ export class ConfigCommand {
 
         await interaction.editReply({
             embeds: [
-                this.embeds
-                    .home(channelId, updated?.secret)
-                    .setDescription(
-                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
-                    ),
+                this.embeds.home(
+                    interaction.guildId,
+                    channelId,
+                    updated?.secret
+                ),
             ],
             components: [buttonsRow],
         })
@@ -229,11 +244,11 @@ export class ConfigCommand {
 
         await interaction.editReply({
             embeds: [
-                this.embeds
-                    .home(updated?.webhook_channel, secret)
-                    .setDescription(
-                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
-                    ),
+                this.embeds.home(
+                    interaction.guildId,
+                    updated?.webhook_channel,
+                    secret
+                ),
             ],
             components: [buttonsRow],
         })
