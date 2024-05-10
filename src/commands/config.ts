@@ -13,6 +13,7 @@ import {
     TextInputBuilder,
     TextInputStyle,
     channelMention,
+    codeBlock,
     inlineCode,
 } from 'discord.js'
 import {
@@ -27,57 +28,66 @@ import { PrismaService } from '../PrismaService'
 import { inject, injectable } from 'tsyringe'
 import { PermissonsGuard } from '../lib/guards/permissions'
 import { env } from '../lib/env'
+import { emoji } from '../lib/emoji'
 
 @Discord()
-@Guard(PermissonsGuard(['ManageGuild', 'Administrator']))
+@Guard(PermissonsGuard([`ManageGuild`, `Administrator`]))
 @injectable()
 export class ConfigCommand {
     constructor(@inject(PrismaService) private db: PrismaService) {}
 
     private buttons = {
         home: new ButtonBuilder({
-            customId: 'config/home',
+            customId: `config/home`,
             style: ButtonStyle.Secondary,
-            label: 'INICIO',
-            emoji: '🏠',
+            label: `INICIO`,
+            emoji: {
+                id: emoji('home')?.id,
+            },
         }),
         channel: new ButtonBuilder({
-            customId: 'config/chennel',
+            customId: `config/chennel`,
             style: ButtonStyle.Primary,
-            label: 'CANAL',
-            emoji: '#️⃣',
+            label: `CANAL`,
+            emoji: {
+                id: emoji('chat')?.id,
+            },
         }),
         secret: new ButtonBuilder({
-            customId: 'config/secret',
+            customId: `config/secret`,
             style: ButtonStyle.Primary,
-            label: 'SECRET',
-            emoji: '🔑',
+            label: `SECRET`,
+            emoji: {
+                id: emoji('secret')?.id,
+            },
         }),
     }
 
     private embeds = {
         home: (channelId?: string | null, secret?: string | null) =>
             new EmbedBuilder()
-                .setTitle('⚙️ Painel de configurações')
-                .setDescription(
-                    brBuilder(
-                        `#️⃣ Webhook Channel: ${
-                            channelId
-                                ? channelMention(channelId)
-                                : inlineCode('Não definido')
-                        }`,
-                        `🔑 Secret: ${inlineCode(
-                            `${secret ?? 'Não definido'}`
-                        )}`
-                    )
+                .setTitle(`${emoji('config')} Painel de configurações`)
+                .addFields(
+                    {
+                        name: `${emoji('chat')} Canal`,
+                        value: channelId
+                            ? channelMention(channelId)
+                            : codeBlock('Não definido'),
+                        inline: true,
+                    },
+                    {
+                        name: `${emoji('secret')} Secret`,
+                        inline: false,
+                        value: codeBlock(secret ?? 'Não definido'),
+                    }
                 ),
     }
 
     @Slash({
-        description: 'Configurações dos Webhooks',
-        defaultMemberPermissions: ['ManageGuild'],
+        description: `Configurações dos Webhooks`,
+        defaultMemberPermissions: [`ManageGuild`],
     })
-    async config(interaction: CommandInteraction<'cached'>) {
+    async config(interaction: CommandInteraction<`cached`>) {
         await interaction.deferReply({ ephemeral: true })
 
         const guildData = await this.db.guild.findUnique({
@@ -86,20 +96,20 @@ export class ConfigCommand {
 
         const buttonsRow = createRow(this.buttons.channel, this.buttons.secret)
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 this.embeds
                     .home(guildData?.webhook_channel, guildData?.secret)
-                    .setFooter({
-                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
-                    }),
+                    .setDescription(
+                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
+                    ),
             ],
             components: [buttonsRow],
         })
     }
 
-    @ButtonComponent({ id: 'config/home' })
-    async homeButton(interaction: ButtonInteraction<'cached'>) {
+    @ButtonComponent({ id: `config/home` })
+    async homeButton(interaction: ButtonInteraction<`cached`>) {
         await interaction.deferUpdate()
         const guildData = await this.db.guild.findUnique({
             where: { id: interaction.guildId },
@@ -107,44 +117,44 @@ export class ConfigCommand {
 
         const row = createRow(this.buttons.channel, this.buttons.secret)
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 this.embeds
                     .home(guildData?.webhook_channel, guildData?.secret)
-                    .setFooter({
-                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
-                    }),
+                    .setDescription(
+                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
+                    ),
             ],
             components: [row],
         })
     }
 
-    @ButtonComponent({ id: 'config/chennel' })
-    async channelButton(interaction: ButtonInteraction<'cached'>) {
+    @ButtonComponent({ id: `config/chennel` })
+    async channelButton(interaction: ButtonInteraction<`cached`>) {
         await interaction.deferUpdate()
         const guildData = await this.db.guild.findUnique({
             where: { id: interaction.guildId },
         })
         const embed = new EmbedBuilder()
-            .setTitle('⚙️ Configurar Canal')
+            .setTitle(`${emoji('config')} Configurar Canal`)
             .setDescription(
                 brBuilder(
-                    '',
-                    `#️⃣ Canal Atual: ${
+                    ``,
+                    `${emoji('chat')} **Canal Atual**: ${
                         guildData?.webhook_channel
                             ? channelMention(guildData.webhook_channel)
-                            : inlineCode('Não definido')
+                            : inlineCode(`Não definido`)
                     }`
                 )
             )
             .setFooter({
-                text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
+                text: `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`,
             })
 
         const selectRow = createRow(
             new ChannelSelectMenuBuilder()
                 .setChannelTypes(ChannelType.GuildText)
-                .setCustomId('config/select-channel')
+                .setCustomId(`config/select-channel`)
                 .setDefaultChannels(
                     guildData?.webhook_channel
                         ? [guildData.webhook_channel]
@@ -154,33 +164,33 @@ export class ConfigCommand {
 
         const buttonsRow = createRow(this.buttons.home)
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [embed],
             components: [selectRow, buttonsRow],
         })
     }
 
-    @ButtonComponent({ id: 'config/secret' })
-    async secretButton(interaction: ButtonInteraction<'cached'>) {
+    @ButtonComponent({ id: `config/secret` })
+    async secretButton(interaction: ButtonInteraction<`cached`>) {
         const modal = new ModalBuilder()
-            .setCustomId('config/secret-modal')
-            .setTitle('Configure a Key')
+            .setCustomId(`config/secret-modal`)
+            .setTitle(`Configure a Key`)
             .setComponents(
                 createRow(
                     new TextInputBuilder()
-                        .setCustomId('keyInput')
-                        .setLabel('Secret')
+                        .setCustomId(`keyInput`)
+                        .setLabel(`Secret`)
                         .setRequired(true)
                         .setStyle(TextInputStyle.Short)
                 )
             )
 
-        interaction.showModal(modal)
+        await interaction.showModal(modal)
     }
 
-    @SelectMenuComponent({ id: 'config/select-channel' })
+    @SelectMenuComponent({ id: `config/select-channel` })
     async selectMenuChaneel(
-        interaction: ChannelSelectMenuInteraction<'cached'>
+        interaction: ChannelSelectMenuInteraction<`cached`>
     ) {
         await interaction.deferUpdate()
 
@@ -193,22 +203,22 @@ export class ConfigCommand {
 
         const buttonsRow = createRow(this.buttons.channel, this.buttons.secret)
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 this.embeds
-                    .home(updated.webhook_channel, updated.secret)
-                    .setFooter({
-                        text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
-                    }),
+                    .home(channelId, updated?.secret)
+                    .setDescription(
+                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
+                    ),
             ],
             components: [buttonsRow],
         })
     }
 
-    @ModalComponent({ id: 'config/secret-modal' })
-    async modal(interaction: ModalSubmitInteraction<'cached'>) {
+    @ModalComponent({ id: `config/secret-modal` })
+    async modal(interaction: ModalSubmitInteraction<`cached`>) {
         await interaction.deferUpdate()
-        const secret = interaction.fields.getTextInputValue('keyInput')
+        const secret = interaction.fields.getTextInputValue(`keyInput`)
 
         const updated = await this.db.guild.update({
             where: { id: interaction.guildId },
@@ -217,11 +227,13 @@ export class ConfigCommand {
 
         const buttonsRow = createRow(this.buttons.channel, this.buttons.secret)
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
-                this.embeds.home(updated.webhook_channel, secret).setFooter({
-                    text: `Webhook url: ${env.HOST_URL}/${interaction.guild.id}/github`,
-                }),
+                this.embeds
+                    .home(updated?.webhook_channel, secret)
+                    .setDescription(
+                        `Webhook URL: ${env.HOST_URL}/${interaction.guild.id}/github`
+                    ),
             ],
             components: [buttonsRow],
         })
