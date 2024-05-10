@@ -5,7 +5,7 @@ export const NoPushEvent: Middleware = async (context, next) => {
 
     if (eventType === 'ping') {
         context.status = 200
-        return await next()
+        return
     }
 
     if (!eventType || eventType !== 'push') {
