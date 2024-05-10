@@ -1,13 +1,16 @@
-import { Post, Router } from '@discordx/koa'
+import { Middleware, Post, Router } from '@discordx/koa'
 import { inject, injectable } from 'tsyringe'
 import { Client } from 'discordx'
-import { EmbedBuilder, TextBasedChannel, codeBlock } from 'discord.js'
-import { brBuilder } from '@magicyan/discord'
+import { ButtonBuilder, ButtonStyle, EmbedBuilder, codeBlock } from 'discord.js'
+import { brBuilder, createRow } from '@magicyan/discord'
 import { PrismaService } from '../PrismaService'
 import { Context } from 'koa'
 import crypto from 'node:crypto'
+import { emoji } from '../lib/emoji'
+import { LoggerMiddleware } from './middlewares/logger'
 
 @Router()
+@Middleware(LoggerMiddleware)
 @injectable()
 export class Webhook {
     constructor(
@@ -33,12 +36,12 @@ export class Webhook {
 
         const embed = new EmbedBuilder()
             .setAuthor({
-                name: body.sender.login,
+                name: `${body.repository.full_name}`,
                 iconURL: body.sender.avatar_url,
-                url: body.sender.html_url,
+                url: body.repository.html_url,
             })
             .setTitle('Novo Commit: ' + body.head_commit.id.slice(0, 7))
-            .setURL(body.compare)
+            .setURL(body.head_commit.url)
             .setDescription(body.head_commit.message)
 
         const files: {
@@ -58,36 +61,46 @@ export class Webhook {
         })
 
         if (files.added.length) {
-            console.log(files.added)
             embed.addFields({
-                name: 'Arquivos Adicionados',
+                name: `${emoji('archive')} Arquivos Adicionados`,
                 value: codeBlock(brBuilder(files.added)),
                 inline: true,
             })
         }
 
         if (files.modified.length) {
-            console.log(files.modified)
             embed.addFields({
-                name: 'Arquivos Modificados',
+                name: `${emoji('edit')} Arquivos Modificados`,
                 value: codeBlock(brBuilder(files.modified)),
                 inline: true,
             })
         }
         if (files.removed.length) {
-            console.log(files.removed)
             embed.addFields({
-                name: 'Arquivos Removidos',
+                name: `${emoji('trash')} Arquivos Removidos`,
                 value: codeBlock(brBuilder(files.removed)),
                 inline: true,
             })
         }
 
+        const buttonsRow = createRow(
+            new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setLabel('Compare')
+                .setURL(body.repository.html_url)
+        )
+
         const channel = this.client.channels.cache.get(
             guildData?.webhook_channel!
-        ) as TextBasedChannel
+        )
 
-        await channel.send({ embeds: [embed] })
+        if (!channel || !channel.isTextBased()) {
+            context.response.status = 500
+            context.body = { error: 'Channel not found' }
+            return
+        }
+
+        await channel.send({ embeds: [embed], components: [buttonsRow] })
 
         context.status = 200
     }
